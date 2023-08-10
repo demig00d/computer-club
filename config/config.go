@@ -10,7 +10,8 @@ import (
 
 var (
 	ErrTooFewTables           = errors.New("number of tables should be more than 1")
-	ErrIncorrectWorkHours     = errors.New("incorrect format of work hours")
+	ErrIncorrectWorkHours     = errors.New("incorrect format of work hours: should be hh:mm")
+	ErrOpeningAfterClosing    = errors.New("opening time should be before closingTime")
 	ErrIncorrectPricePerTable = errors.New("price per table should be more than 0")
 )
 
@@ -77,9 +78,12 @@ func (c *Config) getLine(i int, line string) error {
 
 		startTime, err := time24.Parse(fields[0])
 		endTime, err := time24.Parse(fields[1])
-
 		if err != nil {
 			return err
+		}
+
+		if !endTime.After(startTime.Time) {
+			return ErrOpeningAfterClosing
 		}
 
 		c.openingTime = startTime
