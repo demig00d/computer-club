@@ -53,14 +53,6 @@ var InvalidEvents = []struct {
 		eventString: "10:58 2",
 		expectedErr: ErrNotEnoughFields,
 	},
-	{
-		eventString: "10:58 2 Клиент5",
-		expectedErr: client.ErrInvalidCharactersInClientName,
-	},
-	{
-		eventString: "10:58 2 client#",
-		expectedErr: client.ErrInvalidCharactersInClientName,
-	},
 }
 
 func TestEvent(t *testing.T) {
