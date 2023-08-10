@@ -63,7 +63,7 @@ func TestConfig(t *testing.T) {
 			t.Errorf("unexpected error %s", err.Error())
 		}
 
-		if !got.Equal(expected) {
+		if got != (expected) {
 			t.Errorf("got:\n%v\n\nexpected:\n%v", got, expected)
 		}
 	}
@@ -80,7 +80,7 @@ func TestConfig(t *testing.T) {
 }
 
 // utils
-var time00 time24.Time
+var time00, _ = time24.Parse("00:00")
 
 func genHours(h time.Duration) time24.Time {
 	return time00.Add(h * time.Hour)
@@ -104,11 +104,4 @@ func (cfg Config) String() string {
 		cfg.closingTime.String(),
 		cfg.pricePerHour,
 	)
-}
-
-func (cfg Config) Equal(cfg2 Config) bool {
-	return cfg.maxTables == cfg2.maxTables &&
-		cfg.pricePerHour == cfg2.pricePerHour &&
-		cfg.openingTime.Equal(cfg2.openingTime) &&
-		cfg.closingTime.Equal(cfg2.closingTime)
 }

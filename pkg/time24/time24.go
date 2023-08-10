@@ -14,10 +14,6 @@ func (t Time) Add(duration time.Duration) Time {
 	return Time{t.Time.Add(duration)}
 }
 
-func (t1 Time) Equal(t2 Time) bool {
-	return t1.Hour() == t2.Hour() && t1.Minute() == t2.Minute()
-}
-
 func (t Time) String() string {
 	return t.Format(LAYOUT_TIME)
 }
