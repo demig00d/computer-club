@@ -14,7 +14,7 @@ type Client struct {
 }
 
 func Parse(s string) (Client, error) {
-	m, err := regexp.MatchString("\\w+", s)
+	m, err := regexp.MatchString("^[a-zA-Z0-9_\\-]+$", s)
 	if err != nil {
 		return Client{}, err
 	}
