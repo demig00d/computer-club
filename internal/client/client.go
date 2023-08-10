@@ -5,6 +5,10 @@ import (
 	"regexp"
 )
 
+var (
+	ErrInvalidCharactersInClientName = errors.New("invalid characters in the client's name, should be a-zA-Z0-9_-")
+)
+
 type Client struct {
 	Name string
 }
@@ -21,5 +25,5 @@ func Parse(s string) (Client, error) {
 		}, nil
 	}
 
-	return Client{}, errors.New("incorrect name format, should be a-zA-Z0-9_-")
+	return Client{}, ErrInvalidCharactersInClientName
 }
