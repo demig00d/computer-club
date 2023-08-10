@@ -8,6 +8,10 @@ import (
 	"math"
 )
 
+var (
+	ErrEmptyTable = errors.New("table is empty")
+)
+
 type Table struct {
 	Id        int
 	client    *client.Client
@@ -38,7 +42,7 @@ func (t *Table) IsEmpty() bool {
 }
 func (t *Table) GetClient() (client.Client, error) {
 	if t.IsEmpty() {
-		return client.Client{}, errors.New("table is empty")
+		return client.Client{}, ErrEmptyTable
 	}
 
 	return *t.client, nil
