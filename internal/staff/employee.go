@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// Employee использует состояние и методы ComputerClub
+// Employee использует состояние и методы ComputerClub,
 // чтобы исполнять действия присланные событиями (Event)
 type Employee struct {
 	club *computerclub.ComputerClub
