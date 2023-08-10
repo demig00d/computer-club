@@ -38,7 +38,13 @@ func (c ComputerClub) AreThereAnyTablesAvailable() bool {
 }
 
 func (c ComputerClub) AreClientsInQueueMoreThanTables() bool {
-	return c.ClientQueue.Length() > 0
+	availableTablesCount := 0
+	for _, table := range c.Tables {
+		if table.IsEmpty() {
+			availableTablesCount++
+		}
+	}
+	return c.ClientQueue.Length() > availableTablesCount
 }
 
 func (c ComputerClub) IsClientIn(client client.Client) bool {
