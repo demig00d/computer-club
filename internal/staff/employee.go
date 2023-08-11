@@ -47,7 +47,7 @@ func (e Employee) AddClientToQueue(client client.Client, time time24.Time) *even
 		}
 	}
 
-	e.club.ClientQueue.Push(client)
+	_ = e.club.ClientQueue.Push(client)
 
 	return nil
 }

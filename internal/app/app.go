@@ -2,6 +2,7 @@ package app
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/demig00d/computer-club/config"
 	"github.com/demig00d/computer-club/internal/events"
 	"github.com/demig00d/computer-club/internal/staff"
@@ -31,7 +32,13 @@ func Run(app App) {
 			log.Fatal(err)
 		}
 
-		app.manager.ExecuteEvent(&event)
+		fmt.Println(event)
+
+		newEvent := app.manager.HandleEvent(event)
+
+		if newEvent != nil {
+			fmt.Println(newEvent)
+		}
 	}
 
 	app.manager.CloseClub()

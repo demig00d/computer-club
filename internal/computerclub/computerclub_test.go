@@ -34,7 +34,7 @@ func ClientsMoreThanTablesClub() ComputerClub {
 	q := queue.NewQueue[client.Client]()
 
 	for _, c := range cs {
-		q.Push(c)
+		_ = q.Push(c)
 	}
 
 	club.ClientQueue = q

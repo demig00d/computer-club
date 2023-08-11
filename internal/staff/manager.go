@@ -40,24 +40,19 @@ func (m Manager) CloseClub() {
 	fmt.Print(report)
 }
 
-func (m Manager) ExecuteEvent(event *events.Event) {
+func (m Manager) HandleEvent(event events.Event) *events.Event {
+	var newEvent *events.Event
 
-	for event != nil {
-
-		fmt.Println(event)
-
-		switch event.Id {
-		case events.ClientCameIn:
-			event = m.subordinate.MeetClient(event.Client, event.Time)
-		case events.ClientSatDownAtTheTable, events.ClientSatDownAtTheTableGen:
-			event = m.subordinate.SeatClientAt(event.Client, event.Time, event.TableId)
-		case events.ClientIsWaiting:
-			event = m.subordinate.AddClientToQueue(event.Client, event.Time)
-		case events.ClientHasGone, events.ClientHasGoneGen:
-			event = m.subordinate.EscortClientOut(event.Client, event.Time)
-		default:
-			return
-		}
+	switch event.Id {
+	case events.ClientCameIn:
+		newEvent = m.subordinate.MeetClient(event.Client, event.Time)
+	case events.ClientSatDownAtTheTable, events.ClientSatDownAtTheTableGen:
+		newEvent = m.subordinate.SeatClientAt(event.Client, event.Time, event.TableId)
+	case events.ClientIsWaiting:
+		newEvent = m.subordinate.AddClientToQueue(event.Client, event.Time)
+	case events.ClientHasGone, events.ClientHasGoneGen:
+		newEvent = m.subordinate.EscortClientOut(event.Client, event.Time)
 	}
+	return newEvent
 
 }
