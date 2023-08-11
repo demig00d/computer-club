@@ -2,15 +2,15 @@ package main
 
 import (
 	"bufio"
-	"github.com/demig00d/computer-club/config"
-	"github.com/demig00d/computer-club/internal/app"
 	"log"
 	"os"
+
+	"github.com/demig00d/computer-club/config"
+	"github.com/demig00d/computer-club/internal/app"
 )
 
 func main() {
-	// filename := os.Args[2]
-	filename := "testdata/1.txt"
+	filename := os.Args[1]
 
 	readFile, err := os.Open(filename)
 	defer func() {
