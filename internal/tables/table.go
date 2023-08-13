@@ -40,12 +40,8 @@ func (t *Table) Free() {
 func (t *Table) IsEmpty() bool {
 	return t.client == nil
 }
-func (t *Table) GetClient() (client.Client, error) {
-	if t.IsEmpty() {
-		return client.Client{}, ErrEmptyTable
-	}
-
-	return *t.client, nil
+func (t *Table) Client() *client.Client {
+	return t.client
 }
 
 func (t *Table) SeatClient(client client.Client, time time24.Time) {

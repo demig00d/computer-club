@@ -1,10 +1,12 @@
 package staff
 
 import (
+	"errors"
 	"fmt"
 	"github.com/demig00d/computer-club/internal/client"
 	"github.com/demig00d/computer-club/internal/computerclub"
 	"github.com/demig00d/computer-club/internal/events"
+	"github.com/demig00d/computer-club/internal/tables"
 	"github.com/demig00d/computer-club/pkg/time24"
 	"sort"
 	"strings"
@@ -52,7 +54,7 @@ func (e Employee) AddClientToQueue(client client.Client, time time24.Time) *even
 	return nil
 }
 
-// SeatClientAt Добавляет Table в Client и vice versa
+// SeatClientAt Добавляет Client в Table
 func (e Employee) SeatClientAt(client client.Client, time time24.Time, tableId int) *events.Event {
 
 	if e.club.IsClientIn(client) {
@@ -60,20 +62,22 @@ func (e Employee) SeatClientAt(client client.Client, time time24.Time, tableId i
 		return &event
 	}
 
-	for _, table := range e.club.Tables {
-		if table.Id == tableId {
-			if !table.IsEmpty() {
-				event := events.PlaceIsBusy(time)
-				return &event
-			}
-
-			table.SeatClient(client, time)
-			e.club.ClientQueue.Remove(client)
-		}
+	table := e.club.Tables.GetTable(tableId)
+	if table == nil {
+		return nil
 	}
+
+	if !table.IsEmpty() {
+		event := events.PlaceIsBusy(time)
+		return &event
+	}
+
+	table.SeatClient(client, time)
+	e.club.ClientQueue.Remove(client)
 
 	return nil
 }
+
 func (e Employee) EscortClientOut(client client.Client, time time24.Time) *events.Event {
 	if !e.club.IsClientIn(client) {
 		event := events.ClientUnknown(time)
@@ -103,14 +107,13 @@ func (e Employee) EscortClientOut(client client.Client, time time24.Time) *event
 
 func (e Employee) KickOutClients() []events.Event {
 	cs := make([]client.Client, 0)
-	for _, table := range e.club.Tables {
-		client, err := table.GetClient()
-		if err != nil {
-			continue
-		}
 
-		cs = append(cs, client)
-	}
+	e.club.Tables.ForEach(func(table *tables.Table) {
+		c := table.Client()
+		if c != nil {
+			cs = append(cs, *c)
+		}
+	})
 
 	sort.Slice(cs, func(i, j int) bool {
 		return cs[i].Name < cs[j].Name
@@ -118,43 +121,46 @@ func (e Employee) KickOutClients() []events.Event {
 
 	es := make([]events.Event, 0, len(cs))
 
-	for _, client := range cs {
+	for _, c := range cs {
 		es = append(es, events.Event{
 			Time:   e.club.ClosingTime(),
 			Id:     events.ClientHasGoneGen,
-			Client: client,
+			Client: c,
 		})
-		e.EscortClientOut(client, e.club.ClosingTime())
+		e.EscortClientOut(c, e.club.ClosingTime())
 	}
 
 	return es
 }
 
 func (e Employee) FormTablesReport() string {
-
 	var sb strings.Builder
 
-	for _, t := range e.club.Tables {
+	e.club.Tables.ForEach(func(table *tables.Table) {
 		sb.WriteString(
 			fmt.Sprintf("%d %d %s\n",
-				t.Id, t.TotalSum, t.TotalTime.String()),
+				table.Id, table.TotalSum, table.TotalTime.String()),
 		)
-	}
+	})
 
 	return sb.String()
 
 }
 
 func (e Employee) vacateTheTable(client client.Client, time time24.Time) (int, error) {
-	for _, table := range e.club.Tables {
+	// хак позволяющий определить есть ли вообще клиент без использования флагов
+	tableId := -1
+
+	e.club.Tables.ForEach(func(table *tables.Table) {
 		if table.HasClient(client) {
-			tableId := table.Id
+			tableId = table.Id
 			table.Free()
-			table.CalculateTimeAndSum(time, e.club.PricePerHour())
-
-			return tableId, nil
+			table.CalculateTimeAndSum(time, e.club.Tables.PricePerHour)
 		}
-	}
+	})
 
-	return 0, nil
+	if tableId == -1 {
+		return 0, errors.New("no such client: " + client.Name)
+	}
+	return tableId, nil
 }
