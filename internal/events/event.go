@@ -50,8 +50,14 @@ func Parse(s string) (Event, error) {
 	}
 
 	time, err := time24.Parse(fields[0])
+	if err != nil {
+		return Event{}, err
+	}
 
 	eventId, err := strconv.Atoi(fields[1])
+	if err != nil {
+		return Event{}, err
+	}
 
 	// ToDo возможно стоить перенести
 	if eventId < 1 || eventId > 4 {

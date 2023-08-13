@@ -77,6 +77,10 @@ func (c *Config) getLine(i int, line string) error {
 		}
 
 		startTime, err := time24.Parse(fields[0])
+		if err != nil {
+			return err
+		}
+
 		endTime, err := time24.Parse(fields[1])
 		if err != nil {
 			return err
