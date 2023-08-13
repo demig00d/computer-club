@@ -4,26 +4,31 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/demig00d/computer-club/config"
+	"github.com/demig00d/computer-club/internal/computerclub"
 	"github.com/demig00d/computer-club/internal/events"
 	"github.com/demig00d/computer-club/internal/staff"
 	"log"
 )
 
 type App struct {
-	manager     staff.Manager
+	config      config.Config
 	fileScanner *bufio.Scanner
 }
 
 func NewApp(cfg config.Config, filescanner *bufio.Scanner) App {
 	return App{
-		manager:     staff.NewManager(cfg),
+		config:      cfg,
 		fileScanner: filescanner,
 	}
 }
 
 func Run(app App) {
 
-	app.manager.OpenClub()
+	club := computerclub.NewComputerClub(app.config)
+	employee := staff.NewEmployee(club)
+	manager := staff.NewManager(club.Workhours, employee)
+
+	manager.OpenClub()
 
 	for app.fileScanner.Scan() {
 		line := app.fileScanner.Text()
@@ -32,14 +37,13 @@ func Run(app App) {
 			log.Fatal(err)
 		}
 
-		fmt.Println(event)
-
-		newEvent := app.manager.HandleEvent(event)
-
-		if newEvent != nil {
-			fmt.Println(newEvent)
+		pEvent := &event
+		for pEvent != nil {
+			fmt.Println(pEvent)
+			pEvent = manager.HandleEvent(*pEvent)
 		}
+
 	}
 
-	app.manager.CloseClub()
+	manager.CloseClub()
 }

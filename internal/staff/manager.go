@@ -2,26 +2,24 @@ package staff
 
 import (
 	"fmt"
-	"github.com/demig00d/computer-club/config"
-	"github.com/demig00d/computer-club/internal/computerclub"
 	"github.com/demig00d/computer-club/internal/events"
+	"github.com/demig00d/computer-club/internal/workhours"
 )
 
 type Manager struct {
-	cfg         config.Config
+	workhours   workhours.Workhours
 	subordinate Employee
 }
 
-func NewManager(cfg config.Config) Manager {
-	club := computerclub.NewComputerClub(cfg)
+func NewManager(workhours workhours.Workhours, employee Employee) Manager {
 	return Manager{
-		cfg:         cfg,
-		subordinate: NewEmployee(club),
+		workhours:   workhours,
+		subordinate: employee,
 	}
 }
 
 func (m Manager) OpenClub() {
-	fmt.Println(m.cfg.OpeningTime())
+	fmt.Println(m.workhours.OpeningTime())
 }
 
 func (m Manager) CloseClub() {
@@ -32,7 +30,7 @@ func (m Manager) CloseClub() {
 		m.subordinate.EscortClientOut(e.Client, e.Time)
 	}
 
-	endTime := m.cfg.ClosingTime()
+	endTime := m.workhours.ClosingTime()
 	fmt.Println(endTime)
 
 	// для всех столов выводим выручку и общее время

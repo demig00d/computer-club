@@ -12,13 +12,16 @@ import (
 // и имеет методы для проверки
 type ComputerClub struct {
 	config.Config
+	workhours.Workhours
 	ClientQueue queue.Queue[client.Client]
 	Tables      []*tables.Table
 }
 
 func NewComputerClub(cfg config.Config) ComputerClub {
+	workhours := workhours.NewWorkhours(cfg)
 	return ComputerClub{
 		Config:      cfg,
+		Workhours:   workhours,
 		ClientQueue: queue.NewQueue[client.Client](),
 		Tables:      tables.CreateN(cfg.MaxTables()),
 	}
@@ -60,4 +63,8 @@ func (c ComputerClub) IsClientIn(client client.Client) bool {
 
 	return c.ClientQueue.IsIn(client) || isInTable()
 
+}
+
+func (c ComputerClub) IsBeforeOpening(time time24.Time) bool {
+	return c.OpeningTime().After(time.Time)
 }
