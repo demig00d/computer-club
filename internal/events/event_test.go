@@ -10,7 +10,7 @@ import (
 
 var time00, _ = time24.Parse("00:00")
 
-var testTable = []struct {
+var testCases = []struct {
 	input    string
 	expected Event
 }{
@@ -19,7 +19,7 @@ var testTable = []struct {
 		expected: Event{
 			Time:   time00.Add(9 * time.Hour),
 			Id:     1,
-			Client: client.Client{"client2"},
+			Client: client.Client{Name: "client2"},
 		},
 	},
 	{
@@ -27,7 +27,7 @@ var testTable = []struct {
 		expected: Event{
 			Time:    time00.Add(11 * time.Hour),
 			Id:      2,
-			Client:  client.Client{"client3"},
+			Client:  client.Client{Name: "client3"},
 			TableId: 3,
 		},
 	},
@@ -36,12 +36,12 @@ var testTable = []struct {
 		expected: Event{
 			Time:   time00.Add(19 * time.Hour),
 			Id:     4,
-			Client: client.Client{"client5"},
+			Client: client.Client{Name: "client5"},
 		},
 	},
 }
 
-var InvalidEvents = []struct {
+var InvalidEventsTestCases = []struct {
 	eventString string
 	expectedErr error
 }{
@@ -57,7 +57,7 @@ var InvalidEvents = []struct {
 
 func TestEvent(t *testing.T) {
 
-	for _, test := range testTable {
+	for _, test := range testCases {
 		got, err := Parse(test.input)
 		if err != nil {
 			t.Errorf("unexpected error %s", err.Error())
@@ -68,7 +68,7 @@ func TestEvent(t *testing.T) {
 		}
 	}
 
-	for _, test := range InvalidEvents {
+	for _, test := range InvalidEventsTestCases {
 		_, err := Parse(test.eventString)
 
 		if !errors.Is(err, test.expectedErr) {

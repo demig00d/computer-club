@@ -1,34 +1,29 @@
 package computerclub
 
 import (
-	"bufio"
-	"github.com/demig00d/computer-club/config"
 	"github.com/demig00d/computer-club/internal/client"
+	"github.com/demig00d/computer-club/internal/mockdata"
 	"github.com/demig00d/computer-club/internal/tables"
 	"github.com/demig00d/computer-club/pkg/queue"
 	"github.com/demig00d/computer-club/pkg/time24"
-	"strings"
 	"testing"
 )
 
-var time00, _ = time24.Parse("00:00")
-var mockCfg, _ = config.NewConfig(
-	bufio.NewScanner(strings.NewReader("5\n10:00 20:00\n10")),
-)
-
-var mockComputerClub = NewComputerClub(mockCfg)
+func MockComputerClub() ComputerClub {
+	return NewComputerClub(mockdata.MockConfig())
+}
 
 func ClientsMoreThanTablesClub() ComputerClub {
-	club := NewComputerClub(mockCfg)
+	club := MockComputerClub()
 
 	cs := []client.Client{
-		{"client1"},
-		{"client2"},
-		{"client3"},
-		{"client4"},
-		{"client5"},
-		{"client6"},
-		{"client7"},
+		{Name: "client1"},
+		{Name: "client2"},
+		{Name: "client3"},
+		{Name: "client4"},
+		{Name: "client5"},
+		{Name: "client6"},
+		{Name: "client7"},
 	}
 
 	q := queue.NewQueue[client.Client]()
@@ -46,22 +41,20 @@ func TestComputerClub_AreClientsInQueueMoreThanTables(t *testing.T) {
 	club := ClientsMoreThanTablesClub()
 
 	if !club.AreClientsInQueueMoreThanTables() {
-		t.Errorf("returned false, but available tables=%d < clients in queue=%d",
-			len(club.Tables), club.ClientQueue.Length())
+		t.Errorf("returned false, but true expected")
 	}
 
-	club.ClientQueue.Poll()
-	club.ClientQueue.Poll()
+	_, _ = club.ClientQueue.Poll()
+	_, _ = club.ClientQueue.Poll()
 
 	if club.AreClientsInQueueMoreThanTables() {
-		t.Errorf("returned true, but available tables=%d > clients in queue=%d",
-			len(club.Tables), club.ClientQueue.Length())
+		t.Errorf("returned true, but false expected")
 	}
 
 }
 
 func TestComputerClub_IsBeforeOpening(t *testing.T) {
-	club := mockComputerClub
+	club := MockComputerClub()
 
 	timeBeforeOpening, _ := time24.Parse("02:00")
 	timeAfterOpening, _ := time24.Parse("22:00")
@@ -78,16 +71,20 @@ func TestComputerClub_IsBeforeOpening(t *testing.T) {
 }
 
 func TestComputerClub_IsClientIn(t *testing.T) {
-	club := mockComputerClub
+	club := MockComputerClub()
 
-	client1 := client.Client{"client1"}
+	client1 := mockdata.Client1
 
 	if club.IsClientIn(client1) {
 		t.Errorf("returned true, but client with name '%s' is not in club:\n    club.Tables: %v",
 			client1.Name, club.Tables)
 	}
 
-	club.Tables[0].SeatClient(client1, time00)
+	club.Tables.ForEach(func(table *tables.Table) {
+		if table.Id == 1 {
+			table.SeatClient(client1, mockdata.Time00)
+		}
+	})
 
 	if !club.IsClientIn(client1) {
 		t.Errorf("returned false, but client with name '%s' is in club:\n    club.Tables: %v",
@@ -96,14 +93,17 @@ func TestComputerClub_IsClientIn(t *testing.T) {
 }
 
 func TestComputerClub_AreThereAnyTablesAvailable(t *testing.T) {
-	club := mockComputerClub
+	club := MockComputerClub()
+	client1 := mockdata.Client1
 
 	if !club.AreThereAnyTablesAvailable() {
 		t.Errorf("returned false, but there are available tables: %v",
 			club.Tables)
 	}
 
-	club.Tables = []*tables.Table{}
+	club.Tables.ForEach(func(table *tables.Table) {
+		table.SeatClient(client1, mockdata.Time00)
+	})
 
 	if club.AreThereAnyTablesAvailable() {
 		t.Errorf("returned true, but there are no tables available: %v",
